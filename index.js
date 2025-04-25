@@ -4,6 +4,7 @@ app.use(express.json())
 var morgan = require('morgan')
 const cors = require('cors')
 app.use(cors())
+app.use(express.static('dist'));
 let persons = [
     {
         "id": "1",
@@ -38,6 +39,10 @@ morgan.token('postBody', (req) => {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postBody'));
 
+app.get('/', (request, response) => {
+    response.send('<h1>Hello Backend</h1>')
+})
+
 app.get('/api/persons', (request, response) => {
     response.json(persons)
 })
@@ -52,7 +57,7 @@ app.get('/api/persons/:id', (request, response) => {
     const id = request.params.id
     const person = persons.find(person => person.id === id)
     if (!person) {
-       return response.status(404).end()
+        return response.status(404).end()
     }
     response.json(person)
 
@@ -68,7 +73,7 @@ app.delete('/api/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
     const newPerson = request.body;
     if (!newPerson.name || newPerson.name.trim() === '') {
-        return response.status(400).json({ error: 'name must be provided and it cannot be empty'});
+        return response.status(400).json({ error: 'name must be provided and it cannot be empty' });
     }
 
     if (!newPerson.number || newPerson.number.trim() === '') {

@@ -59,16 +59,19 @@ app.delete('/api/persons/:id', (request, response, next) => {
 });
 
 app.put('/api/persons/:id', (request, response, next) => {
-    Person.findById(request.params.id).then(
-        person => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (!person) {
+                return response.status(404).end();
+            }
             person.number = request.body.number;
-            return person.save().then(updatedPerson => {
-                response.json(updatedPerson);
-            });
-        }
-    )
-        .catch(error => next(error))
 
+            return person.save({ runValidators: true })
+                .then(updatedPerson => {
+                    response.json(updatedPerson);
+                });
+        })
+        .catch(error => next(error));
 });
 
 app.post('/api/persons', (request, response, next) => {
@@ -81,26 +84,33 @@ app.post('/api/persons', (request, response, next) => {
         return response.status(400).json({ error: 'number must be provided and it cannot be empty' });
     }
 
-    Person.findOne({ name: newPerson.name }).then(existingPerson => {
-        if (existingPerson) {
-            return response.status(400).json({ error: 'name must be unique' });
-        }
+    Person.findOne({ name: newPerson.name })
+        .then(existingPerson => {
+            if (existingPerson) {
+                return response.status(400).json({ error: 'name must be unique' });
+            }
 
-        const person = new Person({
-            name: newPerson.name,
-            number: newPerson.number
-        });
+            const person = new Person({
+                name: newPerson.name,
+                number: newPerson.number
+            });
 
-        person.save().then(savedPerson => {
-            response.json(savedPerson);
-        });
-    }).catch(error => next(error));
+            person.save()
+                .then(savedPerson => {
+                    response.json(savedPerson);
+                })
+                .catch(error => next(error)); // Handle save errors
+        })
+        .catch(error => next(error));
 });
 
 const errorHandler = (error, request, response, next) => {
     console.log(error.message);
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformed id' })
+    }
+    else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
     }
     next(error)
 }

@@ -6,11 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "lint": "eslint ."
   },
   "author": "Samiran",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "@stylistic/eslint-plugin-js": "^4.4.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.2.0",
     "nodemon": "^3.1.9"
   },
   "dependencies": {
